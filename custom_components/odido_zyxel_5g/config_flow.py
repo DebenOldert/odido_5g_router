@@ -43,87 +43,95 @@ class RouterFlowHandler(ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
-        """Handle a flow initialized by the user."""
-        _errors = {}
-        if user_input is not None:
-            try:
-                await self._validate_user_input(
-                    user_input[CONF_NAME],
-                    user_input[CONF_IP_ADDRESS],
-                    user_input[CONF_USERNAME],
-                    user_input[CONF_PASSWORD],
-                )
-            except RouterApiClientCommunicationError as exception:
-                _LOGGER.error(exception)
-                _errors["base"] = "connection"
-            except RouterApiClientLoginError as exception:
-                _LOGGER.error(exception)
-                _errors["base"] = "login"
-            except RouterApiClientResponseError as exception:
-                _LOGGER.error(exception)
-                _errors["base"] = "response"
-            else:
-                return self.async_create_entry(
-                    title=user_input[CONF_IP_ADDRESS], data=user_input
-                )
+    # async def async_step_user(
+    #     self, user_input: dict[str, Any] | None = None
+    # ) -> FlowResult:
+    #     """Handle a flow initialized by the user."""
+    #     _errors = {}
+    #     if user_input is not None:
+    #         try:
+    #             await self._validate_user_input(
+    #                 user_input[CONF_NAME],
+    #                 user_input[CONF_IP_ADDRESS],
+    #                 user_input[CONF_USERNAME],
+    #                 user_input[CONF_PASSWORD],
+    #             )
+    #         except RouterApiClientCommunicationError as exception:
+    #             _LOGGER.error(exception)
+    #             _errors["base"] = "connection"
+    #         except RouterApiClientLoginError as exception:
+    #             _LOGGER.error(exception)
+    #             _errors["base"] = "login"
+    #         except RouterApiClientResponseError as exception:
+    #             _LOGGER.error(exception)
+    #             _errors["base"] = "response"
+    #         else:
+    #             return self.async_create_entry(
+    #                 title=user_input[CONF_NAME], data=user_input
+    #             )
+
+    #     return self.async_show_form(
+    #         step_id="user",
+    #         data_schema=vol.Schema(
+    #             {
+    #                 vol.Required(CONF_NAME, default='5G router'): str,
+    #                 vol.Required(
+    #                     CONF_IP_ADDRESS, default=DEFAULT_IP
+    #                 ): str,
+    #                 vol.Required(
+    #                     CONF_USERNAME, default=DEFAULT_USER
+    #                 ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+    #                 vol.Required(CONF_PASSWORD
+    #                 ): TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD))
+    #             }
+    #         ),
+    #         errors={},
+    #     )
+    async def async_step_user(self, info):
+        if info is not None:
+            pass  # TODO: process info
 
         return self.async_show_form(
-            step_id="user",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(CONF_NAME, default='5G router'): str,
-                    vol.Required(
-                        CONF_IP_ADDRESS, default=DEFAULT_IP
-                    ): str,
-                    vol.Required(
-                        CONF_USERNAME, default=DEFAULT_USER
-                    ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT, autocomplete='username')),
-                    vol.Required(CONF_PASSWORD): TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD, autocomplete='current-password'))
-                }
-            ),
-            errors={},
+            step_id="user", data_schema=vol.Schema({vol.Required("password"): str})
         )
 
-    async def _validate_user_input(self, ip: str, user: str, password: str):
-        """Validate user input."""
-        session = async_create_clientsession(self.hass)
-        client = RouterApiClient(ip=ip,
-                                 user=user,
-                                 password=password,
-                                 session=session)
-        await client.async_login()
+    # async def _validate_user_input(self, ip: str, user: str, password: str):
+    #     """Validate user input."""
+    #     session = async_create_clientsession(self.hass)
+    #     client = RouterApiClient(ip=ip,
+    #                              user=user,
+    #                              password=password,
+    #                              session=session)
+    #     await client.async_login()
 
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
-        return RouterOptionsFlowHandler()
+    # @staticmethod
+    # @callback
+    # def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+    #     return RouterOptionsFlowHandler()
 
 
-class RouterOptionsFlowHandler(OptionsFlow):
-    """Router config flow options handler."""
+# class RouterOptionsFlowHandler(OptionsFlow):
+#     """Router config flow options handler."""
 
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
-        """Manage the options."""
-        if user_input is not None:
-            return self.async_create_entry(
-                title=self.config_entry.data.get(CONF_NAME), data=user_input
-            )
+#     async def async_step_init(
+#         self, user_input: dict[str, Any] | None = None
+#     ) -> FlowResult:
+#         """Manage the options."""
+#         if user_input is not None:
+#             return self.async_create_entry(
+#                 title=self.config_entry.data.get(CONF_NAME), data=user_input
+#             )
 
-        return self.async_show_form(
-            step_id="init",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        CONF_SCAN_INTERVAL,
-                        default=self.config_entry.options.get(
-                            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
-                        ),
-                    ): vol.All(vol.Coerce(int), vol.Range(min=30, max=3600))
-                }
-            ),
-        )
+#         return self.async_show_form(
+#             step_id="init",
+#             data_schema=vol.Schema(
+#                 {
+#                     vol.Required(
+#                         CONF_SCAN_INTERVAL,
+#                         default=self.config_entry.options.get(
+#                             CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+#                         ),
+#                     ): vol.All(vol.Coerce(int), vol.Range(min=30, max=3600))
+#                 }
+#             ),
+#         )
