@@ -92,7 +92,7 @@ class RouterFlowHandler(ConfigFlow, domain=DOMAIN):
             pass  # TODO: process info
 
         return self.async_show_form(
-            step_id="user", data_schema=vol.Schema({vol.Required("password"): str})
+            step_id="user", data_schema=vol.Schema({})
         )
 
     # async def _validate_user_input(self, ip: str, user: str, password: str):
