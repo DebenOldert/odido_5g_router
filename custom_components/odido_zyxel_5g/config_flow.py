@@ -11,6 +11,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import (
     CONF_SCAN_INTERVAL,
+    CONF_NAME,
     CONF_USERNAME,
     CONF_PASSWORD,
     CONF_IP_ADDRESS
@@ -50,19 +51,20 @@ class RouterFlowHandler(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             try:
                 await self._validate_user_input(
+                    user_input[CONF_NAME],
                     user_input[CONF_IP_ADDRESS],
                     user_input[CONF_USERNAME],
                     user_input[CONF_PASSWORD],
                 )
             except RouterApiClientCommunicationError as exception:
                 _LOGGER.error(exception)
-                _errors["base"] = "general"
+                _errors["base"] = "connection"
             except RouterApiClientLoginError as exception:
                 _LOGGER.error(exception)
-                _errors["base"] = "api_key"
+                _errors["base"] = "login"
             except RouterApiClientResponseError as exception:
                 _LOGGER.error(exception)
-                _errors["base"] = "daily_limit"
+                _errors["base"] = "response"
             else:
                 return self.async_create_entry(
                     title=user_input[CONF_IP_ADDRESS], data=user_input
@@ -72,6 +74,7 @@ class RouterFlowHandler(ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=vol.Schema(
                 {
+                    vol.Required(CONF_NAME, default='5G router'): str,
                     vol.Required(
                         CONF_IP_ADDRESS, default=DEFAULT_IP
                     ): str,
@@ -108,7 +111,7 @@ class RouterOptionsFlowHandler(OptionsFlow):
         """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(
-                title=self.config_entry.data.get(CONF_IP_ADDRESS), data=user_input
+                title=self.config_entry.data.get(CONF_NAME), data=user_input
             )
 
         return self.async_show_form(
