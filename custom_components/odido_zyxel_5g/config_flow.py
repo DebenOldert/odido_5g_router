@@ -39,7 +39,7 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 class RouterFlowHandler(ConfigFlow, domain=DOMAIN):
     """Config flow for Odido Router."""
 
-    VERSION = 1
+    VERSION = 2
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None

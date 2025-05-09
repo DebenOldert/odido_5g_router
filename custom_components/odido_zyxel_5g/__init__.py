@@ -1,9 +1,6 @@
 """
 Custom integration to integrate ZYXEL router statistics
 for Odido Klik & Klaar internet subscriptions.
-
-For more details about this integration, please refer to
-https://github.com/golles/ha-knmi/
 """
 
 import logging
