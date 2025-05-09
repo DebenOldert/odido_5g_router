@@ -17,12 +17,14 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
+from homeassistant.helpers.selector import (TextSelector,
+                                            TextSelectorConfig,
+                                            TextSelectorType)
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 
 from .api import (
     RouterApiClient,
-    RouterApiClientError,
     RouterApiClientLoginError,
     RouterApiClientCommunicationError,
     RouterApiClientResponseError,
@@ -38,7 +40,7 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 class RouterFlowHandler(ConfigFlow, domain=DOMAIN):
     """Config flow for Odido Router."""
 
-    VERSION = 2
+    VERSION = 1
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -75,17 +77,17 @@ class RouterFlowHandler(ConfigFlow, domain=DOMAIN):
                     ): str,
                     vol.Required(
                         CONF_USERNAME, default=DEFAULT_USER
-                    ): str,
-                    vol.Required(CONF_PASSWORD): str
+                    ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT, autocomplete='username')),
+                    vol.Required(CONF_PASSWORD): TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD, autocomplete='current-password'))
                 }
             ),
-            errors=_errors,
+            errors={},
         )
 
-    async def _validate_user_input(self, endpoint: str, user: str, password: str):
+    async def _validate_user_input(self, ip: str, user: str, password: str):
         """Validate user input."""
         session = async_create_clientsession(self.hass)
-        client = RouterApiClient(endpoint=endpoint,
+        client = RouterApiClient(ip=ip,
                                  user=user,
                                  password=password,
                                  session=session)

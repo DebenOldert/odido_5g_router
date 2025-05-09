@@ -36,13 +36,13 @@ class RouterApiClient:
 
     def __init__(
         self,
-        endpoint: str,
+        ip: str,
         user: str,
         password: str,
         session: aiohttp.ClientSession,
     ) -> None:
         """ZYXEL API Client."""
-        self.endpoint = endpoint
+        self.ip = ip
         self.user = user
         self.password = password
         self._session = session
@@ -56,7 +56,7 @@ class RouterApiClient:
             self.password.encode('utf-8')).decode('utf-8')
 
         response = await self._session.post(
-            f'{API_SCHEMA}://{self.endpoint}{API_LOGIN_PATH}',
+            f'{API_SCHEMA}://{self.ip}{API_LOGIN_PATH}',
             json=payload)
         
         if response.ok:
