@@ -26,7 +26,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from .api import RouterApiClient
 from .const import (DEFAULT_SCAN_INTERVAL,
                     DOMAIN,
-                    API_DEVICESTATUS,
+                    EP_DEVICESTATUS,
                     API_SCHEMA)
 
 from .coordinator import RouterDataUpdateCoordinator
@@ -63,7 +63,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     client.async_login()
 
-    data = await client.async_query_api(oid=API_DEVICESTATUS)
+    data = await client.async_query_api(oid=EP_DEVICESTATUS)
 
     info = data['DeviceInfo']
 
