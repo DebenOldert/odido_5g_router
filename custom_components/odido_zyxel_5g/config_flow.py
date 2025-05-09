@@ -10,7 +10,6 @@ from homeassistant.config_entries import (
     OptionsFlow,
 )
 from homeassistant.const import (
-    CONF_NAME,
     CONF_SCAN_INTERVAL,
     CONF_USERNAME,
     CONF_PASSWORD,
@@ -64,7 +63,7 @@ class RouterFlowHandler(ConfigFlow, domain=DOMAIN):
                 _errors["base"] = "daily_limit"
             else:
                 return self.async_create_entry(
-                    title=user_input[CONF_NAME], data=user_input
+                    title=user_input[CONF_IP_ADDRESS], data=user_input
                 )
 
         return self.async_show_form(
@@ -107,7 +106,7 @@ class RouterOptionsFlowHandler(OptionsFlow):
         """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(
-                title=self.config_entry.data.get(CONF_NAME), data=user_input
+                title=self.config_entry.data.get(CONF_IP_ADDRESS), data=user_input
             )
 
         return self.async_show_form(
