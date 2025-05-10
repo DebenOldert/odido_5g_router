@@ -1,0 +1,17 @@
+{
+  "domain": "odido",
+  "name": "Odido Klik & Klaar 5G router",
+  "codeowners": [
+    "@DebenOldert"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/DebenOldert/odido_5g_router",
+  "homekit": {},
+  "iot_class": "local_polling",
+  "requirements": [],
+  "single_config_entry": false,
+  "ssdp": [],
+  "version": "0.0.1",
+  "zeroconf": []
+}
