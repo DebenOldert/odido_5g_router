@@ -15,12 +15,15 @@ from homeassistant.const import (
 from homeassistant.core import DOMAIN, HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.typing import StateType
+from homeassistant.helpers.entity import DeviceInfo
 
-from .api import RouterAPI, APIAuthError, Device, DeviceType
+from .api import RouterAPI, RouterAPIAuthError
 from .const import (DEFAULT_SCAN_INTERVAL,
                     EP_CELLINFO,
                     EP_DEVICESTATUS,
-                    EP_LANINFO)
+                    EP_LANINFO,
+                    API_SCHEMA)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -37,13 +40,17 @@ class RouterCoordinator(DataUpdateCoordinator):
 
     data: RouterAPIData
 
-    def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry) -> None:
+    def __init__(self, hass: HomeAssistant,
+                 config_entry: ConfigEntry) -> None:
         """Initialize coordinator."""
 
         # Set variables from values entered in config flow setup
         self.host = config_entry.data[CONF_HOST]
         self.user = config_entry.data[CONF_USERNAME]
         self.pwd = config_entry.data[CONF_PASSWORD]
+
+        self.device_info = None
+        self.config_entry = config_entry
 
         # set variables from options.  You need a default here incase options have not been set
         self.poll_interval = config_entry.options.get(
@@ -91,12 +98,28 @@ class RouterCoordinator(DataUpdateCoordinator):
                     *[self.api.async_query_api(oid=endpoint) for endpoint in endpoints],
                     return_exceptions=True)
                 
-                return RouterAPIData({
+                data = {
                     endpoints[i]: results[i]
                     for i in len(endpoints)
-                })
+                }
 
-        except APIAuthError as err:
+                info = data[EP_DEVICESTATUS]['DeviceInfo']
+
+                self.device_info = DeviceInfo(
+                    configuration_url=f'{API_SCHEMA}://{self.api.host}',
+                    identifiers={(DOMAIN, self.config_entry.entry_id)},
+                    model=info['ModelName'],
+                    manufacturer=info['Manufacturer'],
+                    name=info['Description'],
+                    sw_version=info['SoftwareVersion'],
+                    hw_version=info['HardwareVersion'],
+                    model_id=info['ProductClass'],
+                    serial_number=['SerialNumber'],
+                )
+
+                return RouterAPIData(data)
+
+        except RouterAPIAuthError as err:
             _LOGGER.error(err)
             raise UpdateFailed(err) from err
         except Exception as err:
@@ -105,3 +128,28 @@ class RouterCoordinator(DataUpdateCoordinator):
 
         # # What is returned here is stored in self.data by the DataUpdateCoordinator
         # return RouterAPIData(self.api.controller_name, devices)
+
+    def get_value(self, endpoint: str, path: list[int | str], default=None) -> StateType:
+        """
+        Get a value from the data by a given path.
+        When the value is absent, the default (None) will be returned and an error will be logged.
+        """
+        value = self.data.get(endpoint, default)
+
+        try:
+            for key in path:
+                value = value[key]
+
+            value_type = type(value).__name__
+
+            if value_type in ["int", "float", "str"]:
+                _LOGGER.debug(
+                    "Path %s returns a %s (value = %s)", path, value_type, value
+                )
+            else:
+                _LOGGER.debug("Path %s returns a %s", path, value_type)
+
+            return value
+        except (IndexError, KeyError):
+            _LOGGER.warning("Can't find a value for %s in the API response", path)
+            return default

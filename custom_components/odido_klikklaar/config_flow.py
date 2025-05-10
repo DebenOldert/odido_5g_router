@@ -25,18 +25,21 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import (RouterAPI,
                   RouterAPIAuthError,
-                  RouterAPIConnectionError,
-                  RouterAPIInvalidResponse)
-from .const import DEFAULT_SCAN_INTERVAL, DOMAIN, MIN_SCAN_INTERVAL
+                  RouterAPIConnectionError)
+from .const import (DEFAULT_SCAN_INTERVAL,
+                    DOMAIN,
+                    MIN_SCAN_INTERVAL,
+                    DEFAULT_IP,
+                    DEFAULT_USER)
 
 _LOGGER = logging.getLogger(__name__)
 
 # TODO adjust the data schema to the data that you need
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_HOST, description={"suggested_value": "192.168.1.1"}): str,
-        vol.Required(CONF_USERNAME, description={"suggested_value": "admin"}): str,
-        vol.Required(CONF_PASSWORD, description={"suggested_value": "*****"}): str,
+        vol.Required(CONF_HOST, description={"suggested_value": DEFAULT_IP}): str,
+        vol.Required(CONF_USERNAME, description={"suggested_value": DEFAULT_USER}): str,
+        vol.Required(CONF_PASSWORD): str,
     }
 )
 

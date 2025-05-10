@@ -1,126 +1,158 @@
-"""Interfaces with the Integration 101 Template api sensors."""
+"""Sensor platform for knmi."""
 
-import logging
+from collections.abc import Callable
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
+    SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import UnitOfTemperature
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import (
+    CONF_NAME,
+    PERCENTAGE,
+    UnitOfSoundPressure,
+    UnitOfDataRate
+)
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.typing import StateType
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from . import MyConfigEntry
-from .api import Device, DeviceType
-from .const import DOMAIN
-from .coordinator import ExampleCoordinator
+from .const import (DOMAIN,
+                    EP_CELLINFO,
+                    EP_DEVICESTATUS,
+                    EP_LANINFO)
+from .coordinator import RouterDataUpdateCoordinator
 
-_LOGGER = logging.getLogger(__name__)
+
+@dataclass(kw_only=True, frozen=True)
+class RouterSensorDescription(SensorEntityDescription):
+    """Class describing Router sensor entities."""
+
+    value_fn: Callable[[dict[str, Any]], StateType | datetime | None]
+    attr_fn: Callable[[dict[str, Any]], dict[str, Any]] = lambda _: {}
+
+
+DESCRIPTIONS: list[RouterSensorDescription] = [
+    RouterSensorDescription(
+        key='rssi',
+        icon='mdi:wifi-check',
+        value_fn=lambda coordinator: coordinator.get_value(EP_CELLINFO, ["CellIntfInfo", "RSSI"]),
+        native_unit_of_measurement=UnitOfSoundPressure.WEIGHTED_DECIBEL_A,
+        device_class=SensorDeviceClass.SOUND_PRESSURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        translation_key='rssi',
+        entity_registry_enabled_default=True,
+    ),
+    RouterSensorDescription(
+        key='rsrq',
+        icon='mdi:wifi-arrow-up-down',
+        value_fn=lambda coordinator: coordinator.get_value(EP_CELLINFO, ["CellIntfInfo", "X_ZYXEL_RSRQ"]),
+        native_unit_of_measurement=UnitOfSoundPressure.DECIBEL,
+        device_class=SensorDeviceClass.SOUND_PRESSURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        translation_key='rsrq',
+        entity_registry_enabled_default=False
+    ),
+    RouterSensorDescription(
+        key='rsrp',
+        icon='mdi:wifi-arrow-down',
+        value_fn=lambda coordinator: coordinator.get_value(EP_CELLINFO, ["CellIntfInfo", "X_ZYXEL_RSRP"]),
+        native_unit_of_measurement=UnitOfSoundPressure.WEIGHTED_DECIBEL_A,
+        device_class=SensorDeviceClass.SOUND_PRESSURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        translation_key='rsrp',
+        entity_registry_enabled_default=False
+    ),
+    RouterSensorDescription(
+        key='sinr',
+        icon='mdi:wifi-alert',
+        value_fn=lambda coordinator: coordinator.get_value(EP_CELLINFO, ["CellIntfInfo", "X_ZYXEL_SINR"]),
+        state_class=SensorStateClass.MEASUREMENT,
+        translation_key='sinr',
+        entity_registry_enabled_default=False
+    ),
+    RouterSensorDescription(
+        key='network_technology',
+        icon='mdi:radio-tower',
+        value_fn=lambda coordinator: coordinator.get_value(EP_CELLINFO, ["CellIntfInfo", "CurrentAccessTechnology"]),
+        translation_key='network_technology',
+        entity_registry_enabled_default=True
+    ),
+    RouterSensorDescription(
+        key='network_band',
+        icon='mdi:signal-5g',
+        value_fn=lambda coordinator: coordinator.get_value(EP_CELLINFO, ["CellIntfInfo", "CurrentAccessTechnology"]),
+        translation_key='network_band',
+        entity_registry_enabled_default=False,
+    ),
+    # RouterSensorDescription(
+    #     key='network_devices',
+    #     state_class=SensorStateClass.MEASUREMENT,
+    #     translation_key='network_devices',
+    #     entity_registry_enabled_default=True
+    # )
+]
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: MyConfigEntry,
+    entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
-):
-    """Set up the Sensors."""
-    # This gets the data update coordinator from the config entry runtime data as specified in your __init__.py
-    coordinator: ExampleCoordinator = config_entry.runtime_data.coordinator
+) -> None:
+    """Set up Router sensors based on a config entry."""
+    conf_name = entry.data.get(CONF_NAME)
+    coordinator = hass.data[DOMAIN][entry.entry_id]
 
-    # Enumerate all the sensors in your data value from your DataUpdateCoordinator and add an instance of your sensor class
-    # to a list for each one.
-    # This maybe different in your specific case, depending on how your data is structured
-    sensors = [
-        ExampleSensor(coordinator, device)
-        for device in coordinator.data.devices
-        if device.device_type == DeviceType.TEMP_SENSOR
-    ]
+    entities: list[RouterSensor] = []
 
-    # Create the sensors.
-    async_add_entities(sensors)
-
-
-class ExampleSensor(CoordinatorEntity, SensorEntity):
-    """Implementation of a sensor."""
-
-    def __init__(self, coordinator: ExampleCoordinator, device: Device) -> None:
-        """Initialise sensor."""
-        super().__init__(coordinator)
-        self.device = device
-        self.device_id = device.device_id
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Update sensor with latest data from coordinator."""
-        # This method is called by your DataUpdateCoordinator when a successful update runs.
-        self.device = self.coordinator.get_device_by_id(
-            self.device.device_type, self.device_id
-        )
-        _LOGGER.debug("Device: %s", self.device)
-        self.async_write_ha_state()
-
-    @property
-    def device_class(self) -> str:
-        """Return device class."""
-        # https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
-        return SensorDeviceClass.TEMPERATURE
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return device information."""
-        # Identifiers are what group entities into the same device.
-        # If your device is created elsewhere, you can just specify the indentifiers parameter.
-        # If your device connects via another device, add via_device parameter with the indentifiers of that device.
-        return DeviceInfo(
-            name=f"ExampleDevice{self.device.device_id}",
-            manufacturer="ACME Manufacturer",
-            model="Door&Temp v1",
-            sw_version="1.0",
-            identifiers={
-                (
-                    DOMAIN,
-                    f"{self.coordinator.data.controller_name}-{self.device.device_id}",
-                )
-            },
+    # Add all sensors described above.
+    for description in DESCRIPTIONS:
+        entities.append(
+            RouterSensor(
+                conf_name=conf_name,
+                coordinator=coordinator,
+                description=description,
+            )
         )
 
-    @property
-    def name(self) -> str:
-        """Return the name of the sensor."""
-        return self.device.name
+    async_add_entities(entities)
+
+
+class RouterSensor(CoordinatorEntity[RouterDataUpdateCoordinator], SensorEntity):
+    """Defines a Router sensor."""
+
+    _attr_has_entity_name = True
+    entity_description: RouterSensorDescription
+
+    def __init__(
+        self,
+        conf_name: str,
+        coordinator: RouterDataUpdateCoordinator,
+        description: SensorEntityDescription,
+    ) -> None:
+        """Initialize Router sensor."""
+        super().__init__(coordinator=coordinator)
+
+        #self._attr_attribution = self.coordinator.get_value(["api", 0, "bron"])
+        self._attr_device_info = coordinator.device_info
+        self._attr_unique_id = f"{conf_name}_{description.key}".lower()
+
+        self.entity_description = description
 
     @property
-    def native_value(self) -> int | float:
-        """Return the state of the entity."""
-        # Using native value and native unit of measurement, allows you to change units
-        # in Lovelace and HA will automatically calculate the correct value.
-        return float(self.device.state)
+    def native_value(self) -> StateType:
+        """Return the state."""
+        return self.entity_description.value_fn(self.coordinator)
 
     @property
-    def native_unit_of_measurement(self) -> str | None:
-        """Return unit of temperature."""
-        return UnitOfTemperature.CELSIUS
-
-    @property
-    def state_class(self) -> str | None:
-        """Return state class."""
-        # https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes
-        return SensorStateClass.MEASUREMENT
-
-    @property
-    def unique_id(self) -> str:
-        """Return unique id."""
-        # All entities must have a unique id.  Think carefully what you want this to be as
-        # changing it later will cause HA to create new entities.
-        return f"{DOMAIN}-{self.device.device_unique_id}"
-
-    @property
-    def extra_state_attributes(self):
-        """Return the extra state attributes."""
-        # Add any additional attributes you want on your sensor.
-        attrs = {}
-        attrs["extra_info"] = "Extra Info"
-        return attrs
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the state attributes."""
+        return self.entity_description.attr_fn(self.coordinator)
+    
