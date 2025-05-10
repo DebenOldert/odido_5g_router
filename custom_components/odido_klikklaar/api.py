@@ -41,7 +41,7 @@ class RouterAPI:
         payload = LOGIN_PAYLOAD.copy()
         payload['Input_Account'] = self.user
         payload['Input_Passwd'] = base64.b64encode(
-            self.password.encode('utf-8')).decode('utf-8')
+            self.pwd.encode('utf-8')).decode('utf-8')
 
         response = await self._session.post(
             f'{API_SCHEMA}://{self.ip}{API_LOGIN_PATH}',
