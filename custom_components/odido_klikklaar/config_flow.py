@@ -107,9 +107,10 @@ class RouterConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
-            except Exception:  # pylint: disable=broad-except
-                _LOGGER.exception("Unexpected exception")
+            except Exception as e:  # pylint: disable=broad-except
+                _LOGGER.exception(f"Unexpected exception: {e}")
                 errors["base"] = "unknown"
+                #errors[CONF_PASSWORD] = str(e)
 
             if "base" not in errors:
                 # Validation was successful, so create a unique id for this instance of your integration

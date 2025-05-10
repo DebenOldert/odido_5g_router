@@ -33,7 +33,7 @@ class RouterAPI:
         self.host = host
         self.user = user
         self.pwd = pwd
-        self.session: aiohttp = session
+        self.session: aiohttp.ClientSession = session
     
     async def async_login(self) -> bool:
         """Login and obtain the session cookie"""
@@ -42,14 +42,19 @@ class RouterAPI:
         payload['Input_Account'] = self.user
         payload['Input_Passwd'] = base64.b64encode(
             self.pwd.encode('utf-8')).decode('utf-8')
+        
+        _LOGGER.warning(str(payload))
 
-        response = await self._session.post(
-            f'{API_SCHEMA}://{self.ip}{API_LOGIN_PATH}',
+        response = await self.session.post(
+            f'{API_SCHEMA}://{self.host}{API_LOGIN_PATH}',
             json=payload)
         
         if response.ok:
+            _LOGGER.warning(await response.text)
+            
             try:
-                data = response.json()
+                data = await response.json()
+
 
                 if 'result' in data:
                     if data['result'] == VAL_SUCCES:
@@ -71,8 +76,8 @@ class RouterAPI:
         """Query an authenticated API endpoint"""
         try:
             async with asyncio.timeout(API_TIMEOUT):
-                response = await self._session.get(
-                    f'{API_SCHEMA}://{self.endpoint}{API_BASE_PATH}',
+                response = await self.session.get(
+                    f'{API_SCHEMA}://{self.host}{API_BASE_PATH}',
                     params={'oid': oid})
 
                 if response.ok:
