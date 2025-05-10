@@ -1,0 +1,40 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Odido 5G router",
+        "description": "Read statistics from the 5G router supplied with the Odido 'Klik & Klaar' internet subscription",
+        "data": {
+          "ip_address": "IP address router",
+          "username": "Username",
+          "password": "Password",
+          "name": "Name of the router"
+        }
+      }
+    },
+    "error": {
+      "connection": "Could not connect to the router, check if the IP address is correct.",
+      "login": "Invalid username or password.",
+      "response": "Unknown response returned by the router, check debug logs."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Refresh interval (seconds)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "rssi": { "name": "Received Signal Strength Indicator" },
+      "rsrq": { "name": "Received Signal Received Quality" },
+      "rsrp": { "name": "Received Signal Received Power" },
+      "sinr": { "name": "Signal To Noise Ratio" },
+      "network_technology": { "name": "Network Technology" },
+      "network_band": { "name": "Network Band" }
+    }
+  }
+}
