@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 import logging
 import asyncio
+import traceback as tb
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -74,6 +75,8 @@ class RouterCoordinator(DataUpdateCoordinator):
             verify_ssl=False
         )
 
+        session.cookie_jar._unsafe = True
+
         # Initialise your api here
         self.api = RouterAPI(host=self.host,
                              user=self.user,
@@ -98,15 +101,11 @@ class RouterCoordinator(DataUpdateCoordinator):
                     *[self.api.async_query_api(oid=endpoint) for endpoint in endpoints],
                     return_exceptions=True)
                 
-                _LOGGER.debug(results)
-                
                 data = {
                     endpoints[i]: results[i]
-                    for i in len(endpoints)
+                    for i in range(len(endpoints))
                 }
 
-                _LOGGER.debug(data)
-                
                 info = data[EP_DEVICESTATUS]['DeviceInfo']
 
                 self.device_info = DeviceInfo(
@@ -128,6 +127,7 @@ class RouterCoordinator(DataUpdateCoordinator):
             raise UpdateFailed(err) from err
         except Exception as err:
             # This will show entities as unavailable by raising UpdateFailed exception
+            _LOGGER.error(''.join(tb.format_exception(None, err, err.__traceback__)))
             _LOGGER.error(err)
             raise UpdateFailed(f"Error communicating with API: {err}") from err
 

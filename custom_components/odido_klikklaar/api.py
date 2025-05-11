@@ -42,9 +42,6 @@ class RouterAPI:
         payload['Input_Account'] = self.user
         payload['Input_Passwd'] = base64.b64encode(
             self.pwd.encode('utf-8')).decode('utf-8')
-        
-        _LOGGER.warning(str(payload))
-        _LOGGER.warning(f'{API_SCHEMA}://{self.host}{API_LOGIN_PATH}')
 
         try:
 
@@ -61,8 +58,6 @@ class RouterAPI:
             raise RouterAPIAuthError('Username or password incorrect.')
 
         if response.ok:
-            _LOGGER.warning(await response.text())
-
             try:
                 data = await response.json()
 
@@ -93,14 +88,13 @@ class RouterAPI:
                     from exception
             
             if response.status == 401:
-                raise RouterAPIAuthError('Unauthenticated request. Did the username or password change')
+                raise RouterAPIAuthError('Unauthenticated request. Did the username or password change?')
 
             if response.ok:
                 try:
                     data: dict = await response.json()
 
                     if data.get(KEY_RESULT, None) == VAL_SUCCES:
-                        _LOGGER.warning(data.get(KEY_OBJECT, [{}]))
                         return data.get(KEY_OBJECT, [{}])[0]
                     else:
                         raise RouterAPIInvalidResponse(f'Response returned error')
@@ -111,9 +105,6 @@ class RouterAPI:
             else:
                 raise RouterAPIConnectionError(
                     f'Error retrieving API. Status: {response.status}')
-
-        
-
 
     @property
     def controller_name(self) -> str:

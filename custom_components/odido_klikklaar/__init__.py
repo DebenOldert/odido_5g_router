@@ -9,21 +9,19 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from homeassistant.helpers.entity import DeviceInfo
 
 from .coordinator import RouterCoordinator
-from .const import EP_DEVICESTATUS
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS: list[Platform] = [Platform.BINARY_SENSOR,
-                             Platform.SENSOR,
-                             Platform.BUTTON,
-                             Platform.SWITCH,
-                             Platform.TEXT]
+PLATFORMS: list[Platform] = Platform.SENSOR
+                             #[#Platform.BINARY_SENSOR,
+                             #Platform.SENSOR,
+                             #Platform.BUTTON,
+                             #Platform.SWITCH,
+                             #Platform.TEXT]
 
 type RouterConfigEntry = ConfigEntry[RuntimeData]
 
