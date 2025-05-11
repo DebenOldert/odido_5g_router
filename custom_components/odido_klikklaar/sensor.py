@@ -120,7 +120,7 @@ DESCRIPTIONS: list[RouterSensorDescription] = [
         
     ),
     RouterSensorDescription(
-        key='eth1_downloaded',
+        key='lan1_downloaded',
         icon='mdi:download-network',
         # Reverse sent because the is what the router is sending to the port
         # thus what the port is downloading
@@ -129,11 +129,11 @@ DESCRIPTIONS: list[RouterSensorDescription] = [
         suggested_unit_of_measurement='GB',
         device_class=SensorDeviceClass.DATA_SIZE,
         state_class=SensorStateClass.TOTAL,
-        translation_key='eth1_downloaded',
+        translation_key='lan1_downloaded',
         entity_registry_enabled_default=False
     ),
     RouterSensorDescription(
-        key='eth1_uploaded',
+        key='lan1_uploaded',
         icon='mdi:upload-network',
         # Reverse receive because the is what the router is receiving to the port
         # thus what the port is uploading
@@ -142,12 +142,12 @@ DESCRIPTIONS: list[RouterSensorDescription] = [
         suggested_unit_of_measurement='GB',
         device_class=SensorDeviceClass.DATA_SIZE,
         state_class=SensorStateClass.TOTAL,
-        translation_key='eth1_uploaded',
+        translation_key='lan1_uploaded',
         entity_registry_enabled_default=False,
         
     ),
     RouterSensorDescription(
-        key='eth2_downloaded',
+        key='lan2_downloaded',
         icon='mdi:download-network',
         # Reverse sent because the is what the router is sending to the port
         # thus what the port is downloading
@@ -156,11 +156,11 @@ DESCRIPTIONS: list[RouterSensorDescription] = [
         suggested_unit_of_measurement='GB',
         device_class=SensorDeviceClass.DATA_SIZE,
         state_class=SensorStateClass.TOTAL,
-        translation_key='eth2_downloaded',
+        translation_key='lan2_downloaded',
         entity_registry_enabled_default=False
     ),
     RouterSensorDescription(
-        key='eth2_uploaded',
+        key='lan2_uploaded',
         icon='mdi:upload-network',
         # Reverse receive because the is what the router is receiving to the port
         # thus what the port is uploading
@@ -169,7 +169,7 @@ DESCRIPTIONS: list[RouterSensorDescription] = [
         suggested_unit_of_measurement='GB',
         device_class=SensorDeviceClass.DATA_SIZE,
         state_class=SensorStateClass.TOTAL,
-        translation_key='eth2_uploaded',
+        translation_key='lan2_uploaded',
         entity_registry_enabled_default=False,
         
     ),

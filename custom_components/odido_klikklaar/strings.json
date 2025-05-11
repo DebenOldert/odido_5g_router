@@ -45,7 +45,14 @@
       "rsrp": { "name": "Received Signal Received Power" },
       "sinr": { "name": "Signal To Noise Ratio" },
       "network_technology": { "name": "Network Technology" },
-      "network_band": { "name": "Network Band" }
+      "network_band": { "name": "Network Band" },
+      "wan_downloaded": { "name": "WAN total download" },
+      "wan_uploaded": { "name": "WAN total upload" },
+      "lan1_downloaded": { "name": "LAN1 total download" },
+      "lan1_uploaded": { "name": "LAN1 total upload" },
+      "lan2_downloaded": { "name": "LAN2 total download" },
+      "lan2_uploaded": { "name": "LAN2 total upload" },
+      "wan_ip_address": { "name": "External IP address" }
     }
   }
 }
