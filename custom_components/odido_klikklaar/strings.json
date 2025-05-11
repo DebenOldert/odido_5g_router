@@ -37,5 +37,15 @@
         "title": "Example Integration Options"
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "rssi": { "name": "Received Signal Strength Indicator" },
+      "rsrq": { "name": "Received Signal Received Quality" },
+      "rsrp": { "name": "Received Signal Received Power" },
+      "sinr": { "name": "Signal To Noise Ratio" },
+      "network_technology": { "name": "Network Technology" },
+      "network_band": { "name": "Network Band" }
+    }
   }
 }

@@ -120,7 +120,7 @@ class RouterCoordinator(DataUpdateCoordinator):
                     serial_number=['SerialNumber'],
                 )
 
-                return RouterAPIData(data)
+                return data
 
         except RouterAPIAuthError as err:
             _LOGGER.error(err)

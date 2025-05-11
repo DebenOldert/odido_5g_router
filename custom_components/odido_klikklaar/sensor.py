@@ -28,7 +28,7 @@ from .const import (DOMAIN,
                     EP_CELLINFO,
                     EP_DEVICESTATUS,
                     EP_LANINFO)
-from .coordinator import RouterDataUpdateCoordinator
+from .coordinator import RouterCoordinator
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -88,7 +88,7 @@ DESCRIPTIONS: list[RouterSensorDescription] = [
     RouterSensorDescription(
         key='network_band',
         icon='mdi:signal-5g',
-        value_fn=lambda coordinator: coordinator.get_value(EP_CELLINFO, ["CellIntfInfo", "CurrentAccessTechnology"]),
+        value_fn=lambda coordinator: coordinator.get_value(EP_CELLINFO, ["CellIntfInfo", "X_ZYXEL_CurrentBand"]),
         translation_key='network_band',
         entity_registry_enabled_default=False,
     ),
@@ -108,7 +108,8 @@ async def async_setup_entry(
 ) -> None:
     """Set up Router sensors based on a config entry."""
     conf_name = entry.data.get(CONF_NAME)
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = entry.runtime_data.coordinator
+    #coordinator = hass.data[DOMAIN][entry.entry_id]
 
     entities: list[RouterSensor] = []
 
@@ -125,7 +126,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class RouterSensor(CoordinatorEntity[RouterDataUpdateCoordinator], SensorEntity):
+class RouterSensor(CoordinatorEntity[RouterCoordinator], SensorEntity):
     """Defines a Router sensor."""
 
     _attr_has_entity_name = True
@@ -134,7 +135,7 @@ class RouterSensor(CoordinatorEntity[RouterDataUpdateCoordinator], SensorEntity)
     def __init__(
         self,
         conf_name: str,
-        coordinator: RouterDataUpdateCoordinator,
+        coordinator: RouterCoordinator,
         description: SensorEntityDescription,
     ) -> None:
         """Initialize Router sensor."""
