@@ -24,6 +24,8 @@ from .const import (DEFAULT_SCAN_INTERVAL,
                     EP_CELLINFO,
                     EP_DEVICESTATUS,
                     EP_LANINFO,
+                    EP_TRAFFIC,
+                    EP_COMMON,
                     API_SCHEMA)
 
 _LOGGER = logging.getLogger(__name__)
@@ -95,7 +97,9 @@ class RouterCoordinator(DataUpdateCoordinator):
                 # Get API endpoints
                 endpoints = [EP_CELLINFO,
                              EP_DEVICESTATUS,
-                             EP_LANINFO]
+                             EP_LANINFO,
+                             EP_TRAFFIC,
+                             EP_COMMON]
                 
                 results = await asyncio.gather(
                     *[self.api.async_query_api(oid=endpoint) for endpoint in endpoints],

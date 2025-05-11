@@ -27,7 +27,9 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import (DOMAIN,
                     EP_CELLINFO,
                     EP_DEVICESTATUS,
-                    EP_LANINFO)
+                    EP_LANINFO,
+                    EP_TRAFFIC,
+                    EP_COMMON)
 from .coordinator import RouterCoordinator
 
 
@@ -91,6 +93,92 @@ DESCRIPTIONS: list[RouterSensorDescription] = [
         value_fn=lambda coordinator: coordinator.get_value(EP_CELLINFO, ["CellIntfInfo", "X_ZYXEL_CurrentBand"]),
         translation_key='network_band',
         entity_registry_enabled_default=False,
+    ),
+    RouterSensorDescription(
+        key='wan_downloaded',
+        icon='mdi:cloud-download',
+        value_fn=lambda coordinator: coordinator.get_value(EP_TRAFFIC, ['ipIfaceSt', 1, 'BytesReceived']) \
+            + coordinator.get_value(EP_TRAFFIC, ['ipIfaceSt', 2, 'BytesReceived']),
+        native_unit_of_measurement='B',
+        suggested_unit_of_measurement='GB',
+        device_class=SensorDeviceClass.DATA_SIZE,
+        state_class=SensorStateClass.TOTAL,
+        translation_key='wan_downloaded',
+        entity_registry_enabled_default=False
+    ),
+    RouterSensorDescription(
+        key='wan_uploaded',
+        icon='mdi:cloud-upload',
+        value_fn=lambda coordinator: coordinator.get_value(EP_TRAFFIC, ['ipIfaceSt', 1, 'BytesSent']) \
+            + coordinator.get_value(EP_TRAFFIC, ['ipIfaceSt', 2, 'BytesSent']),
+        native_unit_of_measurement='B',
+        suggested_unit_of_measurement='GB',
+        device_class=SensorDeviceClass.DATA_SIZE,
+        state_class=SensorStateClass.TOTAL,
+        translation_key='wan_uploaded',
+        entity_registry_enabled_default=False,
+        
+    ),
+    RouterSensorDescription(
+        key='eth1_downloaded',
+        icon='mdi:download-network',
+        # Reverse sent because the is what the router is sending to the port
+        # thus what the port is downloading
+        value_fn=lambda coordinator: coordinator.get_value(EP_TRAFFIC, ['ethIfaceSt', 0, 'BytesSent']),
+        native_unit_of_measurement='B',
+        suggested_unit_of_measurement='GB',
+        device_class=SensorDeviceClass.DATA_SIZE,
+        state_class=SensorStateClass.TOTAL,
+        translation_key='eth1_downloaded',
+        entity_registry_enabled_default=False
+    ),
+    RouterSensorDescription(
+        key='eth1_uploaded',
+        icon='mdi:upload-network',
+        # Reverse receive because the is what the router is receiving to the port
+        # thus what the port is uploading
+        value_fn=lambda coordinator: coordinator.get_value(EP_TRAFFIC, ['ethIfaceSt', 0, 'BytesReceived']),
+        native_unit_of_measurement='B',
+        suggested_unit_of_measurement='GB',
+        device_class=SensorDeviceClass.DATA_SIZE,
+        state_class=SensorStateClass.TOTAL,
+        translation_key='eth1_uploaded',
+        entity_registry_enabled_default=False,
+        
+    ),
+    RouterSensorDescription(
+        key='eth2_downloaded',
+        icon='mdi:download-network',
+        # Reverse sent because the is what the router is sending to the port
+        # thus what the port is downloading
+        value_fn=lambda coordinator: coordinator.get_value(EP_TRAFFIC, ['ethIfaceSt', 1, 'BytesSent']),
+        native_unit_of_measurement='B',
+        suggested_unit_of_measurement='GB',
+        device_class=SensorDeviceClass.DATA_SIZE,
+        state_class=SensorStateClass.TOTAL,
+        translation_key='eth2_downloaded',
+        entity_registry_enabled_default=False
+    ),
+    RouterSensorDescription(
+        key='eth2_uploaded',
+        icon='mdi:upload-network',
+        # Reverse receive because the is what the router is receiving to the port
+        # thus what the port is uploading
+        value_fn=lambda coordinator: coordinator.get_value(EP_TRAFFIC, ['ethIfaceSt', 1, 'BytesReceived']),
+        native_unit_of_measurement='B',
+        suggested_unit_of_measurement='GB',
+        device_class=SensorDeviceClass.DATA_SIZE,
+        state_class=SensorStateClass.TOTAL,
+        translation_key='eth2_uploaded',
+        entity_registry_enabled_default=False,
+        
+    ),
+    RouterSensorDescription(
+        key='wan_ip_address',
+        icon='mdi:ip-network',
+        value_fn=lambda coordinator: coordinator.get_value(EP_COMMON, ['WanLanInfo', 1, 'IPv4Address', 0, 'IPAddress']),
+        translation_key='wan_ip_address',
+        entity_registry_enabled_default=False
     ),
     # RouterSensorDescription(
     #     key='network_devices',

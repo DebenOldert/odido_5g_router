@@ -13,6 +13,8 @@ API_TIMEZONE: Final = "Europe/Amsterdam"
 EP_CELLINFO: Final[str] = 'status'
 EP_LANINFO: Final[str] = 'lanhosts'
 EP_DEVICESTATUS: Final[str] = 'cardpage_status'
+EP_TRAFFIC: Final[str] = 'Traffic_Status'
+EP_COMMON: Final[str] = 'cardpage_status'
 
 # Keys & values
 KEY_RESULT: Final[str] = 'result'
