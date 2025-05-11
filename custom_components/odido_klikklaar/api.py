@@ -44,17 +44,27 @@ class RouterAPI:
             self.pwd.encode('utf-8')).decode('utf-8')
         
         _LOGGER.warning(str(payload))
+        _LOGGER.warning(f'{API_SCHEMA}://{self.host}{API_LOGIN_PATH}')
 
-        response = await self.session.post(
-            f'{API_SCHEMA}://{self.host}{API_LOGIN_PATH}',
-            json=payload)
+        try:
+
+            response = await self.session.post(
+                f'{API_SCHEMA}://{self.host}{API_LOGIN_PATH}',
+                json=payload)
         
-        if response.ok:
-            _LOGGER.warning(await response.text)
+        except Exception as e:
+            _LOGGER.error(f'Could not connect to router. {e}')
+            raise RouterAPIConnectionError(
+                f'Error connecting to router. {e}')
             
+        if response.status == 401:
+            raise RouterAPIAuthError('Username or password incorrect.')
+
+        if response.ok:
+            _LOGGER.warning(await response.text())
+
             try:
                 data = await response.json()
-
 
                 if 'result' in data:
                     if data['result'] == VAL_SUCCES:
@@ -67,38 +77,42 @@ class RouterAPI:
             except Exception as json_exception:
                 raise RouterAPIInvalidResponse(f'Unable to decode login response') \
                     from json_exception
-            
-        raise RouterAPIConnectionError(
-            f'Error connecting to router. Status: {response.status}')
+        else:
+            raise RouterAPIInvalidResponse(f'Unknown status {response.status}')
     
     async def async_query_api(self,
                               oid: str) -> dict:
         """Query an authenticated API endpoint"""
-        try:
-            async with asyncio.timeout(API_TIMEOUT):
+        async with asyncio.timeout(API_TIMEOUT):
+            try:
                 response = await self.session.get(
                     f'{API_SCHEMA}://{self.host}{API_BASE_PATH}',
                     params={'oid': oid})
+            except Exception as exception:
+                raise RouterAPIConnectionError('Unable to connect to router API') \
+                    from exception
+            
+            if response.status == 401:
+                raise RouterAPIAuthError('Unauthenticated request. Did the username or password change')
 
-                if response.ok:
-                    try:
-                        data: dict = await response.json()
+            if response.ok:
+                try:
+                    data: dict = await response.json()
 
-                        if data.get(KEY_RESULT, None) == VAL_SUCCES:
-                            return data.get(KEY_OBJECT, [{}])[0]
-                        else:
-                            raise RouterAPIInvalidResponse(f'Response returned error')
+                    if data.get(KEY_RESULT, None) == VAL_SUCCES:
+                        _LOGGER.warning(data.get(KEY_OBJECT, [{}]))
+                        return data.get(KEY_OBJECT, [{}])[0]
+                    else:
+                        raise RouterAPIInvalidResponse(f'Response returned error')
 
-                    except Exception as json_exception:
-                        raise RouterAPIInvalidResponse(f'Unable to decode JSON') \
-                            from json_exception
-                else:
-                    raise RouterAPIConnectionError(
-                        f'Error retrieving API. Status: {response.status}')
+                except Exception as json_exception:
+                    raise RouterAPIInvalidResponse(f'Unable to decode JSON') \
+                        from json_exception
+            else:
+                raise RouterAPIConnectionError(
+                    f'Error retrieving API. Status: {response.status}')
 
-        except Exception as exception:
-            raise RouterAPIConnectionError('Unable to connect to router API') \
-                from exception
+        
 
 
     @property

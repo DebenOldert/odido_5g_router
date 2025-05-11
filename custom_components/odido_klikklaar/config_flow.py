@@ -73,7 +73,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     except RouterAPIConnectionError as err:
         raise CannotConnect from err
     
-    return {"title": f"Odido Klik & Klaar router - {data[CONF_HOST]}"}
+    return {"title": data[CONF_HOST]}
 
 
 class RouterConfigFlow(ConfigFlow, domain=DOMAIN):

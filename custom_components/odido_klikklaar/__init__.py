@@ -44,12 +44,11 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: RouterConfigEntry
 
     # Perform an initial data load from api.
     # async_config_entry_first_refresh() is special in that it does not log errors if it fails
-    if not await coordinator.api.async_login():
-        raise ConfigEntryNotReady
+    await coordinator.async_config_entry_first_refresh()
     
     # Create the device
-    di = await coordinator.api.async_query_api(oid=EP_DEVICESTATUS)
-    coordinator.device_info = DeviceInfo()
+    # di = await coordinator.api.async_query_api(oid=EP_DEVICESTATUS)
+    # coordinator.device_info = DeviceInfo()
 
     # Initialise a listener for config flow options changes.
     # This will be removed automatically if the integration is unloaded.

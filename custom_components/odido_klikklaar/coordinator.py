@@ -98,11 +98,15 @@ class RouterCoordinator(DataUpdateCoordinator):
                     *[self.api.async_query_api(oid=endpoint) for endpoint in endpoints],
                     return_exceptions=True)
                 
+                _LOGGER.debug(results)
+                
                 data = {
                     endpoints[i]: results[i]
                     for i in len(endpoints)
                 }
 
+                _LOGGER.debug(data)
+                
                 info = data[EP_DEVICESTATUS]['DeviceInfo']
 
                 self.device_info = DeviceInfo(
@@ -124,6 +128,7 @@ class RouterCoordinator(DataUpdateCoordinator):
             raise UpdateFailed(err) from err
         except Exception as err:
             # This will show entities as unavailable by raising UpdateFailed exception
+            _LOGGER.error(err)
             raise UpdateFailed(f"Error communicating with API: {err}") from err
 
         # # What is returned here is stored in self.data by the DataUpdateCoordinator
